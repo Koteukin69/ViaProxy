@@ -47,6 +47,7 @@ import net.raphimc.viaproxy.protocoltranslator.ProtocolTranslator;
 import net.raphimc.viaproxy.protocoltranslator.viaproxy.ViaProxyConfig;
 import net.raphimc.viaproxy.proxy.client2proxy.Client2ProxyChannelInitializer;
 import net.raphimc.viaproxy.proxy.client2proxy.Client2ProxyHandler;
+import net.raphimc.viaproxy.proxy.security.IPWhitelistManager;
 import net.raphimc.viaproxy.proxy.session.ProxyConnection;
 import net.raphimc.viaproxy.saves.SaveManager;
 import net.raphimc.viaproxy.tasks.SystemRequirementsCheck;
@@ -284,6 +285,7 @@ public class ViaProxy {
             Logger.LOGGER.info("Starting proxy server");
             currentProxyServer = new NetServer(new Client2ProxyChannelInitializer(() -> EVENT_MANAGER.call(new Client2ProxyHandlerCreationEvent(new Client2ProxyHandler(), false)).getHandler()));
             EVENT_MANAGER.call(new ProxyStartEvent());
+            IPWhitelistManager.loadWhitelist();
             Logger.LOGGER.info("Binding proxy server to " + AddressUtil.toString(CONFIG.getBindAddress()));
             currentProxyServer.bind(CONFIG.getBindAddress(), false);
         } catch (Throwable e) {
