@@ -116,9 +116,9 @@ public class ViaProxy {
     }
 
     public static void injectedMain(final String injectionMethod, final String[] args) throws InterruptedException, IOException, InvocationTargetException {
-        final boolean useUI = args.length == 0 && !GraphicsEnvironment.isHeadless();
+        final boolean useUI = false;
         final boolean useConfig = args.length == 2 && args[0].equals("config");
-        final boolean useCLI = args.length > 0 && args[0].equals("nugui");
+        final boolean useCLI = args.length == 0 || (args.length > 0 && !args[0].equals("config"));
 
         final List<File> potentialCwds = new ArrayList<>();
         if (System.getenv("VP_RUN_DIR") != null) {
@@ -170,9 +170,9 @@ public class ViaProxy {
         Logger.setup();
         if (!useUI && !useConfig && !useCLI) {
             final String fileName = JarUtil.getJarFile().map(File::getName).orElse("ViaProxy.jar");
-            Logger.LOGGER.info("Usage: java -jar " + fileName + " | Starts ViaProxy in graphical mode if available");
+            Logger.LOGGER.info("Usage: java -jar " + fileName + " | Starts ViaProxy in CLI mode");
             Logger.LOGGER.info("Usage: java -jar " + fileName + " config <config file> | Starts ViaProxy with the specified config file");
-            Logger.LOGGER.info("Usage: java -jar " + fileName + " nugui --help | Starts ViaProxy in CLI mode");
+            Logger.LOGGER.info("Usage: java -jar " + fileName + " --help | Shows CLI help");
             System.exit(1);
         }
 
