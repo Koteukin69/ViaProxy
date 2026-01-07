@@ -44,6 +44,7 @@ import net.raphimc.viaproxy.protocoltranslator.viaproxy.ViaProxyConfig;
 import net.raphimc.viaproxy.proxy.packethandler.*;
 import net.raphimc.viaproxy.proxy.proxy2server.Proxy2ServerChannelInitializer;
 import net.raphimc.viaproxy.proxy.proxy2server.Proxy2ServerHandler;
+import net.raphimc.viaproxy.proxy.security.IPWhitelistManager;
 import net.raphimc.viaproxy.proxy.session.BedrockProxyConnection;
 import net.raphimc.viaproxy.proxy.session.DummyProxyConnection;
 import net.raphimc.viaproxy.proxy.session.ProxyConnection;
@@ -71,6 +72,18 @@ public class Client2ProxyHandler extends SimpleChannelInboundHandler<Packet> {
         super.channelActive(ctx);
 
         this.proxyConnection = new DummyProxyConnection(ctx.channel());
+
+        // IP whitelist check
+        if (ctx.channel().remoteAddress() instanceof InetSocketAddress) {
+            InetSocketAddress remoteAddress = (InetSocketAddress) ctx.channel().remoteAddress();
+            if (!IPWhitelistManager.isAllowed(remoteAddress)) {
+                String clientIp = remoteAddress.getAddress().getHostAddress();
+                Logger.LOGGER.warn("Blocked connection from non-whitelisted IP: " + clientIp);
+                ctx.channel().close();
+                return;
+            }
+        }
+
         ViaProxy.getConnectedClients().add(ctx.channel());
     }
 
@@ -118,6 +131,16 @@ public class Client2ProxyHandler extends SimpleChannelInboundHandler<Packet> {
 
         this.proxyConnection.setClientVersion(clientVersion);
         this.proxyConnection.setC2pConnectionState(packet.intendedState.getConnectionState());
+
+        // IP whitelist check with kick message
+        if (this.proxyConnection.getC2P().remoteAddress() instanceof InetSocketAddress) {
+            InetSocketAddress remoteAddress = (InetSocketAddress) this.proxyConnection.getC2P().remoteAddress();
+            if (!IPWhitelistManager.isAllowed(remoteAddress)) {
+                String clientIp = remoteAddress.getAddress().getHostAddress();
+                this.proxyConnection.kickClient("§cAccess Denied\n§7Your IP address is not whitelisted\n§eIP: §f" + clientIp);
+                throw CloseAndReturn.INSTANCE;
+            }
+        }
 
         if (!ProtocolVersion.isRegistered(clientVersion.getVersionType(), clientVersion.getOriginalVersion())) {
             this.proxyConnection.kickClient("§cYour client version is not supported by ViaProxy!");

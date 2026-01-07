@@ -44,7 +44,9 @@ import net.raphimc.viaproxy.util.logging.Logger;
 
 import java.io.File;
 import java.net.SocketAddress;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
@@ -233,6 +235,21 @@ public class ViaProxyConfig {
             "Enable this if you want to see client status requests in the console and log files.",
     })
     private boolean logClientStatusRequests = false;
+
+    @Option("ip-whitelist-enabled")
+    @Description({
+            "Enable IP whitelist to restrict access to the proxy.",
+            "When enabled, only IP addresses from the ip-whitelist will be allowed to connect.",
+    })
+    private boolean ipWhitelistEnabled = false;
+
+    @Option("ip-whitelist")
+    @Description({
+            "List of allowed IP addresses when ip-whitelist-enabled is true.",
+            "Supports both individual IPs (e.g., '192.168.1.100') and CIDR notation (e.g., '192.168.1.0/24').",
+            "Example: ['127.0.0.1', '192.168.1.0/24', '10.0.0.5']",
+    })
+    private List<String> ipWhitelist = new ArrayList<>();
 
     public static ViaProxyConfig create(final File configFile) {
         final ConfigLoader<ViaProxyConfig> configLoader = new ConfigLoader<>(ViaProxyConfig.class);
@@ -598,6 +615,24 @@ public class ViaProxyConfig {
 
     public void setLogClientStatusRequests(final boolean logClientStatusRequests) {
         this.logClientStatusRequests = logClientStatusRequests;
+        this.save();
+    }
+
+    public boolean isIpWhitelistEnabled() {
+        return this.ipWhitelistEnabled;
+    }
+
+    public void setIpWhitelistEnabled(final boolean ipWhitelistEnabled) {
+        this.ipWhitelistEnabled = ipWhitelistEnabled;
+        this.save();
+    }
+
+    public List<String> getIpWhitelist() {
+        return this.ipWhitelist;
+    }
+
+    public void setIpWhitelist(final List<String> ipWhitelist) {
+        this.ipWhitelist = ipWhitelist;
         this.save();
     }
 
